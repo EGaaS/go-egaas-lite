@@ -13,7 +13,6 @@ import (
 
 	"github.com/go-thrust/lib/commands"
 	. "github.com/go-thrust/lib/common"
-	"github.com/EGaaS/go-mvp/packages/utils"
 )
 
 const (
@@ -104,11 +103,11 @@ func Clean() {
 
 func CleanExit() {
 	Clean()
-	if utils.DB != nil && utils.DB.DB != nil {
+	/*if utils.DB != nil && utils.DB.DB != nil {
 		utils.DB.ExecSql(`INSERT INTO stop_daemons(stop_time) VALUES (?)`, utils.Time())
-	} else {
+	} else {*/
 		os.Exit(0)
-	}
+	/*}*/
 }
 
 func Reader(out *Out, in *In) {

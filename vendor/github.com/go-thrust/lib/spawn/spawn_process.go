@@ -10,7 +10,7 @@ import (
 	"runtime"
 	. "github.com/go-thrust/lib/common"
 	"github.com/go-thrust/lib/connection"
-	"github.com/EGaaS/go-mvp/packages/utils"
+	"path/filepath"
 )
 
 const (
@@ -28,7 +28,8 @@ var (
 SetBaseDirectory sets the base directory used in the other helper methods
 */
 func SetBaseDirectory(dir string) error {
-	base = *utils.Dir
+	dir0, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+	base = dir0
 	return nil
 }
 
