@@ -18,18 +18,30 @@ package main
 
 import (
 	//	"fmt"
+	"flag"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
+	"time"
 
-	"github.com/EGaaS/go-lite/system"
+	"github.com/EGaaS/go-egaas-lite/system"
 	"github.com/go-thrust/lib/bindings/window"
 	"github.com/go-thrust/lib/commands"
 	"github.com/go-thrust/thrust"
 )
 
 const GETPOOLURL = `http://node0.egaas.org/`
+
+var (
+	DevTools int64
+)
+
+func init() {
+	flag.Int64Var(&DevTools, "dev", 0, "Devtools in thrust-shell")
+	flag.Parse()
+}
 
 func main() {
 	var (
@@ -61,24 +73,45 @@ func main() {
 	/*	thrustWindow.HandleEvent("*", func(cr commands.EventResult) {
 		fmt.Println("HandleEvent", cr)
 	})*/
-	if *utils.DevTools != 0 {
+	if DevTools != 0 {
 		thrustWindow.OpenDevtools()
 	}
+	accfile := filepath.Join(GetCurrentDir(), `accounts.txt`)
 	thrustWindow.HandleRemote(func(er commands.EventResult, this *window.Window) {
 		//		fmt.Println("RemoteMessage Recieved:", er.Message.Payload)
 		if len(er.Message.Payload) > 7 && er.Message.Payload[:2] == `[{` {
-			ioutil.WriteFile(filepath.Join(*utils.Dir, `accounts.txt`), []byte(er.Message.Payload), 0644)
+			ioutil.WriteFile(accfile, []byte(er.Message.Payload), 0644)
 		} else if er.Message.Payload == `ACCOUNTS` {
-			accounts, _ := ioutil.ReadFile(filepath.Join(*utils.Dir, `accounts.txt`))
+			accounts, _ := ioutil.ReadFile(accfile)
 			this.SendRemoteMessage(string(accounts))
 		} else {
-			utils.ShellExecute(er.Message.Payload)
+			ShellExecute(er.Message.Payload)
 		}
 	})
 	thrustWindow.Show()
 	thrustWindow.Focus()
 	for {
-		utils.Sleep(3600)
+		time.Sleep(3600 * time.Second)
 	}
 	system.FinishThrust(0)
+}
+
+func ShellExecute(cmdline string) {
+	time.Sleep(500 * time.Millisecond)
+	switch runtime.GOOS {
+	case "linux":
+		exec.Command("xdg-open", cmdline).Start()
+	case "windows":
+		exec.Command(`rundll32.exe`, `url.dll,FileProtocolHandler`, cmdline).Start()
+	case "darwin":
+		exec.Command("open", cmdline).Start()
+	}
+}
+
+func GetCurrentDir() string {
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		return "."
+	}
+	return dir
 }
