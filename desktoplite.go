@@ -32,7 +32,7 @@ import (
 	"github.com/go-thrust/thrust"
 )
 
-const GETPOOLURL = `http://node0.egaas.org/`
+const GETPOOLURL = `http://node001.egaas.org/`
 
 var (
 	DevTools int64
